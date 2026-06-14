@@ -1,0 +1,55 @@
+#!/bin/sh
+# SecretSentinel pre-commit hook
+# Install: cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#
+# Scans only STAGED files (not the full repo) for speed.
+# Blocks the commit if CRITICAL or HIGH secrets are found.
+
+set -e
+
+SENTINEL_DIR="$(git rev-parse --show-toplevel)/day-02-secrets-sentinel"
+
+if [ ! -f "$SENTINEL_DIR/main.py" ]; then
+  echo "[SecretSentinel] ⚠️  Scanner not found at $SENTINEL_DIR — skipping."
+  exit 0
+fi
+
+echo "[SecretSentinel] 🔍 Scanning staged files..."
+
+# Get list of staged files
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+
+# Write staged file contents to a temp directory
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+for FILE in $STAGED; do
+  DEST="$TMPDIR/$FILE"
+  mkdir -p "$(dirname "$DEST")"
+  git show ":$FILE" > "$DEST" 2>/dev/null || true
+done
+
+# Run scanner on temp dir — fail on HIGH+
+python "$SENTINEL_DIR/main.py" "$TMPDIR" \
+  --severity HIGH \
+  --fail-on HIGH \
+  --no-color
+
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 2 ]; then
+  echo ""
+  echo "[SecretSentinel] ❌ COMMIT BLOCKED — HIGH or CRITICAL secrets detected in staged files."
+  echo "   Fix the issues above, or add false-positive fingerprints to .secretsignore."
+  echo "   To bypass (NOT recommended): git commit --no-verify"
+  exit 1
+elif [ $EXIT_CODE -eq 1 ]; then
+  echo "[SecretSentinel] ⚠️  MEDIUM/LOW findings — review but commit allowed."
+fi
+
+echo "[SecretSentinel] ✅ Scan passed."
+exit 0
