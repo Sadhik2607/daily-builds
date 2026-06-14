@@ -1,0 +1,12 @@
+# SecretSentinel requirements
+# Core scanner has zero external dependencies (stdlib only).
+# Optional extras below enable enhanced features.
+
+# YAML config file support
+PyYAML>=6.0.1
+
+# Rich terminal output (optional — falls back to plain ANSI if missing)
+rich>=13.7.0
+
+# Progress bar for large repo scans
+tqdm>=4.66.0

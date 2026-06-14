@@ -1,0 +1,50 @@
+version: "3.9"
+
+# ── SecretSentinel local dev compose ────────────────────────────────────────
+# docker compose run --rm scan              → terminal report on ./
+# docker compose run --rm scan-html         → HTML report → ./scan-report.html
+# docker compose run --rm scan-sarif        → SARIF → ./results.sarif
+
+services:
+
+  # Default: scan the current repo, terminal output
+  scan:
+    build:
+      context: .
+      target: runtime
+    image: secretsentinel:latest
+    volumes:
+      - .:/scan-target:ro
+    command: ["--format", "terminal", "--severity", "MEDIUM"]
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  # HTML report — open scan-report.html after run
+  scan-html:
+    build:
+      context: .
+      target: runtime
+    image: secretsentinel:latest
+    volumes:
+      - .:/scan-target
+    command: ["--format", "html", "-o", "/scan-target/scan-report.html"]
+
+  # SARIF — upload to GitHub Advanced Security
+  scan-sarif:
+    build:
+      context: .
+      target: runtime
+    image: secretsentinel:latest
+    volumes:
+      - .:/scan-target
+    command: ["--format", "sarif", "-o", "/scan-target/results.sarif"]
+
+  # JSON — pipe to jq or other tools
+  scan-json:
+    build:
+      context: .
+      target: runtime
+    image: secretsentinel:latest
+    volumes:
+      - .:/scan-target
+    command: ["--format", "json", "-o", "/scan-target/findings.json"]
