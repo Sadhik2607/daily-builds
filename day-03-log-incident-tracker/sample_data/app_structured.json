@@ -1,0 +1,36 @@
+{"timestamp":"2026-06-14T03:00:00Z","level":"INFO","service":"api-gateway","message":"Service started successfully","host":"prod-api-01","version":"2.4.1"}
+{"timestamp":"2026-06-14T03:01:00Z","level":"INFO","service":"api-gateway","message":"Health check passed","host":"prod-api-01"}
+{"timestamp":"2026-06-14T03:05:00Z","level":"INFO","service":"auth-service","message":"User alice authenticated","host":"prod-auth-01","user_id":"u-1001"}
+{"timestamp":"2026-06-14T03:10:00Z","level":"WARNING","service":"db-service","message":"Connection pool at 85% capacity (17/20)","host":"prod-db-01","pool_size":20,"in_use":17}
+{"timestamp":"2026-06-14T03:10:30Z","level":"WARNING","service":"db-service","message":"Connection pool at 90% capacity (18/20)","host":"prod-db-01","pool_size":20,"in_use":18}
+{"timestamp":"2026-06-14T03:11:00Z","level":"ERROR","service":"db-service","message":"Connection pool exhausted after 30s — all 20 connections in use","host":"prod-db-01","pool_size":20,"in_use":20}
+{"timestamp":"2026-06-14T03:11:02Z","level":"ERROR","service":"api-gateway","message":"Request failed: connection pool exhausted","host":"prod-api-01","endpoint":"/api/data","latency_ms":30012}
+{"timestamp":"2026-06-14T03:11:05Z","level":"ERROR","service":"api-gateway","message":"Request failed: connection pool exhausted","host":"prod-api-01","endpoint":"/api/data","latency_ms":30007}
+{"timestamp":"2026-06-14T03:11:08Z","level":"ERROR","service":"db-service","message":"Connection pool exhausted — new requests queued (queue_depth=47)","host":"prod-db-01"}
+{"timestamp":"2026-06-14T03:11:11Z","level":"ERROR","service":"api-gateway","message":"Request timeout: no available DB connection after 30s","host":"prod-api-01","endpoint":"/api/reports"}
+{"timestamp":"2026-06-14T03:11:14Z","level":"ERROR","service":"db-service","message":"connection pool exhausted — dropping oldest idle connection","host":"prod-db-01"}
+{"timestamp":"2026-06-14T03:19:00Z","level":"INFO","service":"db-service","message":"Connection pool pressure relieved (in_use=8/20)","host":"prod-db-01"}
+{"timestamp":"2026-06-14T03:19:30Z","level":"INFO","service":"api-gateway","message":"Requests processing normally","host":"prod-api-01"}
+{"timestamp":"2026-06-14T04:00:00Z","level":"INFO","service":"api-gateway","message":"Hourly health summary: 1,247 requests, 98.7% success rate","host":"prod-api-01"}
+{"timestamp":"2026-06-14T06:30:00Z","level":"WARNING","service":"cert-manager","message":"SSL certificate for api.example.com expires in 14 days","host":"prod-infra-01","domain":"api.example.com","days_remaining":14}
+{"timestamp":"2026-06-14T08:00:00Z","level":"INFO","service":"scheduler","message":"Daily ETL batch job started","host":"prod-worker-01"}
+{"timestamp":"2026-06-14T08:45:00Z","level":"INFO","service":"scheduler","message":"Daily ETL batch job completed in 45m02s — 2.4M rows processed","host":"prod-worker-01"}
+{"timestamp":"2026-06-14T10:00:00Z","level":"WARNING","service":"disk-monitor","message":"disk usage at 87% on /var/log (213 GB / 250 GB)","host":"prod-api-01","mount":"/var/log","used_pct":87}
+{"timestamp":"2026-06-14T11:00:00Z","level":"WARNING","service":"disk-monitor","message":"disk usage at 91% on /var/log (228 GB / 250 GB)","host":"prod-api-01","mount":"/var/log","used_pct":91}
+{"timestamp":"2026-06-14T11:30:00Z","level":"CRITICAL","service":"disk-monitor","message":"disk usage CRITICAL: 95% on /var/log (238 GB / 250 GB)","host":"prod-api-01","mount":"/var/log","used_pct":95}
+{"timestamp":"2026-06-14T11:58:00Z","level":"CRITICAL","service":"kernel","message":"Out of memory: Kill process 4521 (java) score 891 or sacrifice child","host":"prod-worker-02","process":"java","pid":4521}
+{"timestamp":"2026-06-14T11:58:05Z","level":"CRITICAL","service":"jvm","message":"java.lang.OutOfMemoryError: Java heap space — heap dump written to /tmp/heapdump.hprof","host":"prod-worker-02"}
+{"timestamp":"2026-06-14T11:58:10Z","level":"CRITICAL","service":"jvm","message":"GC overhead limit exceeded — JVM pausing for full GC","host":"prod-worker-02"}
+{"timestamp":"2026-06-14T11:58:15Z","level":"ERROR","service":"report-service","message":"Worker process unavailable — health check failed after OOM","host":"prod-worker-02"}
+{"timestamp":"2026-06-14T12:02:00Z","level":"INFO","service":"k8s","message":"Pod prod-worker-02 restarted by OOMKilled event — new pod scheduled","host":"k8s-master-01"}
+{"timestamp":"2026-06-14T14:00:00Z","level":"INFO","service":"api-gateway","message":"Traffic nominal: 3,421 req/min","host":"prod-api-01"}
+{"timestamp":"2026-06-14T16:00:00Z","level":"INFO","service":"api-gateway","message":"Traffic peak: 7,892 req/min","host":"prod-api-01"}
+{"timestamp":"2026-06-14T18:00:00Z","level":"INFO","service":"api-gateway","message":"Traffic declining: 4,102 req/min","host":"prod-api-01"}
+{"timestamp":"2026-06-14T20:00:00Z","level":"WARNING","service":"auth-service","message":"Elevated authentication failures from 203.0.113.0/24 — possible brute-force","host":"prod-auth-01","source_cidr":"203.0.113.0/24","failures_per_min":87}
+{"timestamp":"2026-06-14T20:00:15Z","level":"CRITICAL","service":"auth-service","message":"Account lockout triggered for user charlie after 15 failed attempts","host":"prod-auth-01","user":"charlie"}
+{"timestamp":"2026-06-14T22:00:00Z","level":"INFO","service":"cert-manager","message":"Attempting certificate renewal for api.example.com","host":"prod-infra-01"}
+{"timestamp":"2026-06-14T22:31:00Z","level":"CRITICAL","service":"cert-manager","message":"SSL certificate chain broken — intermediate CA not trusted by client","host":"prod-infra-01","domain":"api.example.com","error":"CERTIFICATE_VERIFY_FAILED"}
+{"timestamp":"2026-06-14T22:31:05Z","level":"CRITICAL","service":"api-gateway","message":"SSL ERROR on inbound connection — certificate chain validation failed","host":"prod-api-01"}
+{"timestamp":"2026-06-14T22:31:10Z","level":"CRITICAL","service":"api-gateway","message":"SSL handshake error — TLS 1.3 negotiation failed","host":"prod-api-01","client_ip":"203.0.113.44"}
+{"timestamp":"2026-06-14T22:33:45Z","level":"INFO","service":"cert-manager","message":"Emergency cert renewal succeeded — new cert deployed","host":"prod-infra-01"}
+{"timestamp":"2026-06-14T23:55:00Z","level":"INFO","service":"api-gateway","message":"End of day: 187,432 total requests, 99.1% success, p95 latency 142ms","host":"prod-api-01"}

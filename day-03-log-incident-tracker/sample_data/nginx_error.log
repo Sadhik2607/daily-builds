@@ -1,0 +1,20 @@
+2026/06/14 03:00:00 [notice] 1#1: nginx/1.25.3
+2026/06/14 03:00:00 [notice] 1#1: built by gcc 12.2.0
+2026/06/14 03:00:00 [notice] 1#1: OS: Linux 5.15.0-76-generic
+2026/06/14 03:00:01 [notice] 1#1: start worker processes
+2026/06/14 03:05:00 [info] 42#0: *1 client connected from 192.168.1.10
+2026/06/14 03:11:02 [error] 42#0: *102 connect() failed (111: Connection refused) while connecting to upstream, client: 192.168.1.10, server: api.example.com, request: "POST /api/data HTTP/1.1", upstream: "http://10.0.0.5:8080/api/data"
+2026/06/14 03:11:05 [error] 42#0: *103 connect() failed (111: Connection refused) while connecting to upstream, client: 192.168.1.11, server: api.example.com, request: "POST /api/data HTTP/1.1", upstream: "http://10.0.0.5:8080/api/data"
+2026/06/14 03:11:08 [error] 43#0: *104 no live upstreams while connecting to upstream, client: 192.168.1.12, server: api.example.com, request: "GET /api/status HTTP/1.1"
+2026/06/14 03:11:11 [error] 43#0: *105 upstream timed out (110: Connection timed out) while reading response header from upstream
+2026/06/14 03:11:14 [error] 43#0: *106 connect() failed (111: ECONNREFUSED) while connecting to upstream
+2026/06/14 03:15:00 [info] 42#0: *200 upstream recovered: http://10.0.0.5:8080
+2026/06/14 04:00:00 [info] 1#1: *999 worker connections: 124/1024
+2026/06/14 06:30:00 [warn] 42#0: *300 SSL certificate expires in 14 days for api.example.com
+2026/06/14 10:00:00 [info] 42#0: *1000 rate limit zone "api_limit": requests=18921, dropped=0
+2026/06/14 20:00:10 [warn] 42#0: *2001 limiting requests, excess: 87.2 by zone "auth_limit"
+2026/06/14 22:31:00 [crit] 42#0: *3001 SSL_do_handshake() failed (SSL: error:0A000086:SSL routines::certificate verify failed) while SSL handshaking to upstream
+2026/06/14 22:31:05 [crit] 42#0: *3002 SSL certificate chain broken for api.example.com — SSL_ERROR_RX_RECORD_TOO_LONG
+2026/06/14 22:31:10 [error] 42#0: *3003 SSL handshake failed: CERTIFICATE_VERIFY_FAILED
+2026/06/14 22:33:50 [info] 42#0: *3100 SSL renewed — new certificate loaded for api.example.com
+2026/06/14 23:55:00 [notice] 1#1: signal 1 (SIGHUP) received from 1, reconfiguring
