@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  logsentinel:
+    build: .
+    image: logsentinel:latest
+    command: >
+      scan /data/app_structured.json
+      --format all
+      --output-dir /reports
+      --window 300
+      --severity WARNING
+    volumes:
+      - ./sample_data:/data:ro
+      - ./output:/reports
+    environment:
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+      - WEBHOOK_URL=${WEBHOOK_URL:-}
+    restart: "no"
+
+  # Watches a live log directory (mount your log dir as /logs)
+  logsentinel-watch:
+    build: .
+    image: logsentinel:latest
+    command: >
+      scan /logs/app.log
+      --format json
+      --output-dir /reports
+      --slack-webhook ${SLACK_WEBHOOK_URL:-}
+    volumes:
+      - /var/log:/logs:ro
+      - ./output:/reports
+    environment:
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+    profiles:
+      - watch
+    restart: unless-stopped

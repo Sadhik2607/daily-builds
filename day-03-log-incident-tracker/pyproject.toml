@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "log-sentinel"
+version = "1.0.0"
+description = "Multi-format log parser and incident tracker with MTTR/MTTF, Slack alerts, and HTML/CSV/JSON reports"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Sadhik Ahamed", email = "sadhik021@gmail.com" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+log-sentinel = "log_incident_tracker.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "pytest-cov>=4.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["log_incident_tracker*"]
