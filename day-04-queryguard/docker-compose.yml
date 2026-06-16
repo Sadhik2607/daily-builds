@@ -1,0 +1,31 @@
+version: "3.9"
+
+# Demo stack: a real Postgres instance + QueryGuard scanning it.
+# Usage:
+#   docker compose run --rm queryguard scan postgresql://qg:qg@postgres:5432/qgdemo --format all --output-dir /reports
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: qg
+      POSTGRES_PASSWORD: qg
+      POSTGRES_DB: qgdemo
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./sample_data/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qg -d qgdemo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  queryguard:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./reports:/reports
+      - ./sample_data:/app/sample_data:ro
+    entrypoint: ["python", "-m", "queryguard.cli"]
