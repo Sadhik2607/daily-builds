@@ -1,0 +1,113 @@
+name: Spin Up Dev/QA Environment
+
+# Triggered the moment a PR is opened (or reopened) against main — the PR
+# author gets an isolated, tagged Dev environment on both AWS and Azure
+# without anyone running terraform by hand.
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write   # OIDC federation to AWS/Azure — no long-lived cloud secrets in the repo
+
+concurrency:
+  group: cloudenv-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  generate-tags-and-policies:
+    runs-on: ubuntu-latest
+    outputs:
+      env-name: ${{ steps.vars.outputs.env_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r day-05-cloudenv-provisioner/requirements.txt
+      - id: vars
+        run: echo "env_name=dev-${{ github.actor }}" >> "$GITHUB_OUTPUT"
+      - name: Generate canonical tags
+        working-directory: day-05-cloudenv-provisioner
+        run: python -m cloudenv.cli tag --env dev --owner "${{ github.actor }}" --cloud aws
+      - name: Generate least-privilege IAM policy + Azure role
+        working-directory: day-05-cloudenv-provisioner
+        run: |
+          python -m cloudenv.cli iam --env dev --owner "${{ github.actor }}" --cloud aws --out ./generated
+          python -m cloudenv.cli iam --env dev --owner "${{ github.actor }}" --cloud azure --out ./generated
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated-policies
+          path: day-05-cloudenv-provisioner/generated/
+
+  terraform-apply-aws:
+    needs: generate-tags-and-policies
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: generated-policies
+          path: day-05-cloudenv-provisioner/generated
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform init
+        working-directory: day-05-cloudenv-provisioner/terraform/aws
+        run: terraform init
+      - name: Terraform apply (dev)
+        working-directory: day-05-cloudenv-provisioner/terraform/aws
+        run: |
+          terraform apply -auto-approve \
+            -var="environment=dev" \
+            -var="owner=${{ github.actor }}" \
+            -var="alert_email=${{ secrets.COST_ALERT_EMAIL }}" \
+            -var='tags={"ManagedBy"="cloudenv-provisioner"}'
+
+  terraform-apply-azure:
+    needs: generate-tags-and-policies
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: generated-policies
+          path: day-05-cloudenv-provisioner/generated
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform init
+        working-directory: day-05-cloudenv-provisioner/terraform/azure
+        run: terraform init
+      - name: Terraform apply (dev)
+        working-directory: day-05-cloudenv-provisioner/terraform/azure
+        run: |
+          terraform apply -auto-approve \
+            -var="environment=dev" \
+            -var="owner=${{ github.actor }}" \
+            -var="ssh_public_key=${{ secrets.DEV_SSH_PUBLIC_KEY }}" \
+            -var="alert_email=${{ secrets.COST_ALERT_EMAIL }}" \
+            -var='tags={"ManagedBy"="cloudenv-provisioner"}'
+
+  comment-on-pr:
+    needs: [terraform-apply-aws, terraform-apply-azure]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "Dev environment provisioned on AWS + Azure for @" + context.actor + ". It will be torn down automatically when this PR is merged or closed."
+            });

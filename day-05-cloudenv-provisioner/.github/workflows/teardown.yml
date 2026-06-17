@@ -1,0 +1,75 @@
+name: Teardown Dev/QA Environment
+
+# Triggered the instant the PR closes (merged or abandoned) — destroys both
+# clouds' resources for that PR's environment so nothing lingers and runs
+# up a bill.
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: cloudenv-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  terraform-destroy-aws:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform init
+        working-directory: day-05-cloudenv-provisioner/terraform/aws
+        run: terraform init
+      - name: Terraform destroy
+        working-directory: day-05-cloudenv-provisioner/terraform/aws
+        run: |
+          terraform destroy -auto-approve \
+            -var="environment=dev" \
+            -var="owner=${{ github.actor }}" \
+            -var='tags={"ManagedBy"="cloudenv-provisioner"}'
+
+  terraform-destroy-azure:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform init
+        working-directory: day-05-cloudenv-provisioner/terraform/azure
+        run: terraform init
+      - name: Terraform destroy
+        working-directory: day-05-cloudenv-provisioner/terraform/azure
+        run: |
+          terraform destroy -auto-approve \
+            -var="environment=dev" \
+            -var="owner=${{ github.actor }}" \
+            -var="ssh_public_key=${{ secrets.DEV_SSH_PUBLIC_KEY }}" \
+            -var='tags={"ManagedBy"="cloudenv-provisioner"}'
+
+  comment-on-pr:
+    needs: [terraform-destroy-aws, terraform-destroy-azure]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "Dev environment torn down on AWS + Azure — no resources left running for this PR."
+            });

@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - "day-05-cloudenv-provisioner/**"
+  pull_request:
+    paths:
+      - "day-05-cloudenv-provisioner/**"
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: day-05-cloudenv-provisioner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -v --cov=cloudenv
+
+  terraform-validate:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cloud: [aws, azure]
+    defaults:
+      run:
+        working-directory: day-05-cloudenv-provisioner/terraform/${{ matrix.cloud }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+      - run: terraform validate
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t cloudenv-provisioner day-05-cloudenv-provisioner
+      - run: docker run --rm cloudenv-provisioner tag --env dev --owner ci-smoke-test --cloud aws

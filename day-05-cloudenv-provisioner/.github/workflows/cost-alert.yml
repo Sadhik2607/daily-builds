@@ -1,0 +1,75 @@
+name: Cost Threshold Check
+
+# Runs on a schedule so cost overruns are caught even between PR events —
+# AWS Budgets / Azure Monitor are the primary alert path, this is the
+# secondary CI-driven check that also fails the build (visible in the
+# Actions tab) if any live environment has crossed its threshold.
+on:
+  schedule:
+    - cron: "0 13 * * *" # daily, 13:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  check-aws-cost:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r day-05-cloudenv-provisioner/requirements.txt
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Check AWS cost vs threshold
+        working-directory: day-05-cloudenv-provisioner
+        run: |
+          python - << 'PYEOF'
+          import boto3
+          from cloudenv.cost_report import get_aws_cost, check_threshold
+
+          ce = boto3.client("ce")
+          for env in ("dev", "qa"):
+              amount = get_aws_cost(ce, environment=env, owner="${{ github.repository_owner }}")
+              result = check_threshold("aws", env, amount, threshold_usd=25)
+              print(result.to_alert_message())
+              if result.over_threshold:
+                  raise SystemExit(1)
+          PYEOF
+
+  check-azure-cost:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r day-05-cloudenv-provisioner/requirements.txt
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Check Azure cost vs threshold
+        working-directory: day-05-cloudenv-provisioner
+        run: |
+          python - << 'PYEOF'
+          from azure.identity import DefaultAzureCredential
+          from azure.mgmt.costmanagement import CostManagementClient
+          from cloudenv.cost_report import get_azure_cost, check_threshold
+
+          credential = DefaultAzureCredential()
+          client = CostManagementClient(credential)
+          for env in ("dev", "qa"):
+              scope = f"/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/rg-{env}-${{ github.repository_owner }}"
+              amount = get_azure_cost(client, scope=scope)
+              result = check_threshold("azure", env, amount, threshold_usd=25)
+              print(result.to_alert_message())
+              if result.over_threshold:
+                  raise SystemExit(1)
+          PYEOF
