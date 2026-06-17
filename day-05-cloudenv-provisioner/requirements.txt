@@ -1,0 +1,7 @@
+click>=8.1
+boto3>=1.34
+azure-identity>=1.16
+azure-mgmt-costmanagement>=4.0
+azure-mgmt-authorization>=4.0
+azure-mgmt-resource>=23.0
+rich>=13.7

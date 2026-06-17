@@ -1,0 +1,7 @@
+.git
+.github
+terraform/**/.terraform
+terraform/**/*.tfstate*
+**/__pycache__
+.pytest_cache
+generated/
