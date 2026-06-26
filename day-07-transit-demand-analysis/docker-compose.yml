@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  transit-pulse:
+    build: .
+    volumes:
+      - ./reports:/app/reports
+    command: ["analyze", "sample_data/demo.sqlite3", "--format", "all", "--output-dir", "/app/reports"]
