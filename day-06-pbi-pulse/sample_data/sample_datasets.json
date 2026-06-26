@@ -1,0 +1,11 @@
+{
+  "value": [
+    {"id": "ds-001", "workspaceId": "ws-sales-001", "name": "Daily Revenue Model"},
+    {"id": "ds-002", "workspaceId": "ws-sales-001", "name": "Regional Forecast"},
+    {"id": "ds-003", "workspaceId": "ws-ops-002", "name": "SLA Dashboard"},
+    {"id": "ds-004", "workspaceId": "ws-ops-002", "name": "Incident Volume"},
+    {"id": "ds-005", "workspaceId": "ws-fin-003", "name": "Monthly Close"},
+    {"id": "ds-006", "workspaceId": "ws-fin-003", "name": "Budget vs Actual"},
+    {"id": "ds-007", "workspaceId": "ws-fin-003", "name": "Vendor Spend"}
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "ds-001": [
+    {"status": "Failed", "startTime": "2026-06-26T06:00:00Z", "endTime": "2026-06-26T06:04:00Z",
+     "serviceExceptionJson": "DataSource.Error: ODBC: connection timeout"},
+    {"status": "Completed", "startTime": "2026-06-25T06:00:00Z", "endTime": "2026-06-25T06:18:00Z"}
+  ],
+  "ds-002": [
+    {"status": "Completed", "startTime": "2026-06-25T01:00:00Z", "endTime": "2026-06-25T01:55:00Z"}
+  ],
+  "ds-003": [
+    {"status": "Completed", "startTime": "2026-06-26T05:00:00Z", "endTime": "2026-06-26T05:06:00Z"}
+  ],
+  "ds-004": [
+    {"status": "Completed", "startTime": "2026-06-26T05:10:00Z", "endTime": "2026-06-26T06:25:00Z"}
+  ],
+  "ds-005": [
+    {"status": "Completed", "startTime": "2026-06-26T04:00:00Z", "endTime": "2026-06-26T04:12:00Z"}
+  ],
+  "ds-006": [],
+  "ds-007": [
+    {"status": "Completed", "startTime": "2026-06-26T03:00:00Z", "endTime": "2026-06-26T03:09:00Z"},
+    {"status": "Failed", "startTime": "2026-06-25T03:00:00Z", "endTime": "2026-06-25T03:01:00Z",
+     "serviceExceptionJson": "Mashup evaluation error"}
+  ]
+}

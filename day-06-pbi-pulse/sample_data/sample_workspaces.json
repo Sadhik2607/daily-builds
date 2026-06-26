@@ -1,0 +1,7 @@
+{
+  "value": [
+    {"id": "ws-sales-001", "name": "Sales Analytics", "type": "Workspace"},
+    {"id": "ws-ops-002", "name": "Ops Reporting", "type": "Workspace"},
+    {"id": "ws-fin-003", "name": "Finance BI", "type": "Workspace"}
+  ]
+}
