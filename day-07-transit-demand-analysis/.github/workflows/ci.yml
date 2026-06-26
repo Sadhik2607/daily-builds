@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Build demo database
+        run: python sample_data/build_demo_db.py sample_data/demo.sqlite3
+
+      - name: Run tests
+        run: pytest -v --cov=transit_pulse tests/
+
+      - name: Run analysis (all formats)
+        run: |
+          python -m transit_pulse.cli analyze sample_data/demo.sqlite3 \
+            --format all --output-dir ./reports --fail-under 70
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: transit-pulse-reports
+          path: reports/
